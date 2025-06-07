@@ -49,30 +49,78 @@ public class Demo {
         }
         List<Account> updatedAccounts = new List<Account>();
         Map<Id, Account> accMap = new Map<Id, Account>();
-
+        
         /*if( !conNewList.isEmpty() ){
             for (Account acc : [SELECT Id, Description FROM Account WHERE Id IN : accIds]) {
                 for (Contact con : conNewList) {
                     acc.Description = con.Description;
-                    updatedAccounts.add(acc);                   
+                    updatedAccounts.add(acc);
                 }
             }
         }*/
-
+        
         for(Account acc : [SELECT Id, Description FROM Account WHERE Id IN : accIds]){
             accMap.put(acc.Id, acc);
         }
-
+        
         for (Contact con : conNewList) {
             Account acc = accMap.get(con.AccountId);
             acc.Description = con.Description;
             updatedAccounts.add(acc);
         }
-
-
-
-        if( !updatedAccounts.isEmpty() ){ 
-             UPDATE updatedAccounts;
-         }
+        
+        
+        
+        if( !updatedAccounts.isEmpty() ){
+            UPDATE updatedAccounts;
+        }
     }
+    
+    
+    
+    
+    
+    
+    public static void countContactsRollup(List<Contact> conList , Map<Id,Contact> conMap) {
+        
+        Set<Id> accIds = new Set<Id>();
+        
+        if( !conList.isEmpty() && conMap == null ){ //* for insert case
+            for (Contact con : conList) {
+                if( con.AccountId != null ){
+                    accIds.add(con.AccountId);
+                }
+            }
+        }
+        else if( !conList.isEmpty() && !conMap.isEmpty() ){ //* for update and re-parenting case
+            for (Contact con : conList) {
+                if( con.AccountId != conMap.get(con.Id).AccountId ){
+                    accIds.add(con.AccountId);
+                } if( con.AccountId != null ){
+                    accIds.add(con.AccountId);
+                }if( conMap.get(con.Id).AccountId != null){
+                    accIds.add(conMap.get(con.Id).AccountId);
+                }
+            }
+        }
+
+        List<Account> updatedAccounts = new List<Account>();
+
+        if( !accIds.isEmpty() ){ 
+             for (Account acc : [SELECT Id,Count_Contacts__c,(SELECT Id FROM Contacts) FROM Account WHERE Id IN : accIds]) {
+                acc.Count_Contacts__c = acc.Contacts.size();
+                updatedAccounts.add(acc);
+             }
+         }
+
+         if( !updatedAccounts.isEmpty() ){ 
+             UPDATE updatedAccounts;
+          }
+
+
+
+        
+    }
+    
+    
 }

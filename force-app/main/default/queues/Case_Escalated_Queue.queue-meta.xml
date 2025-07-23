@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Queue xmlns="http://soap.sforce.com/2006/04/metadata">
+    <doesSendEmailToMembers>true</doesSendEmailToMembers>
+    <email>kimihi2320@kissgy.com</email>
+    <name>Case Escalated Queue</name>
+    <queueMembers>
+        <users>
+            <user>mohitbhatt210102+himani@gmail.com</user>
+            <user>javapersonal68@cunning-panda-2s79av.com</user>
+        </users>
+    </queueMembers>
+    <queueSobject>
+        <sobjectType>Case</sobjectType>
+    </queueSobject>
+</Queue>

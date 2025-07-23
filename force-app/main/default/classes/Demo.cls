@@ -121,6 +121,39 @@ public class Demo {
 
         
     }
+
+
+
+
+    @AuraEnabled(cacheable=true)
+    public static List<Case> getCase(){
+        try {
+            List<Case> cases = [
+                SELECT Id , CaseNumber , ContactPhone 
+                FROM Case 
+                WHERE ContactPhone != NULL
+            ];            
+            return cases;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<Account> getAccount(){
+        try {
+            List<Account> accls = [SELECT Id,Name,AccountNumber,Site FROM Account];
+            if (!accls.isEmpty()) {
+                return accls;
+            }
+            return null;
+        } catch (Exception e) {
+            System.debug('Error in getAccount: ' + e.getMessage());
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    
     
     
 }

@@ -1,0 +1,26 @@
+<template>
+    <lightning-card title="Notifier Pannel" icon-name="utility:notification">
+        <div class="slds-m-around_medium">
+
+            <lightning-input 
+            label="Enter notification message"
+            onchange={handleMessageChange}
+            class="slds-m-bottom_small"></lightning-input>
+
+
+            <lightning-button
+            label="Show Success"
+            variant="success"
+            onclick={handleSuccessClick}
+            class="slds-m-right_small"></lightning-button>
+
+            <lightning-button
+            label="Show Error"
+            variant="destructive"
+            onclick={handleErrorClick}></lightning-button>
+
+        </div>
+    </lightning-card>
+
+    <c-toast-display></c-toast-display>
+</template>

@@ -1,0 +1,9 @@
+<template>
+    <lightning-card title="How To Use Conditionals in LWC">
+        <lightning-button variant="brand" label={buttonlabel} onclick={handleOnClick}></lightning-button>
+    </lightning-card>
+
+    <template if:true={tableVisible}>
+        <c-test-component></c-test-component>
+    </template>
+</template>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompactLayout xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Case_Escalation_Log</fullName>
+    <fields>Case_Number__c</fields>
+    <fields>Priority__c</fields>
+    <fields>Status__c</fields>
+    <fields>Time_Stamp__c</fields>
+    <label>Case Escalation Log</label>
+</CompactLayout>

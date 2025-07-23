@@ -106,7 +106,22 @@ public with sharing class CaseManagmentHandler {
         }
     }
 
-
-    
-    
+    public static void afterUpdate(Case oldCase, Case newCase){
+        final String ESCALATION_QUEUE_NAME = 'Case Escalated Queue';
+        List<Group> queueList = [SELECT Id FROM Group WHERE Type = 'Queue' AND Name =: ESCALATION_QUEUE_NAME LIMIT 1];
+        List<Case> casesToAssign = new List<Case>();
+        
+        if (queueList.size() > 0) {
+            if (oldCase.IsEscalated != newCase.IsEscalated && newCase.IsEscalated == true) {
+                Case caseForUpdate = new Case(
+                    Id = newCase.Id,
+                    OwnerId = queueList[0].Id
+                );
+                casesToAssign.add(caseForUpdate);
+            }
+        }
+        if (!casesToAssign.isEmpty()) {
+            update casesToAssign;
+        }
+    }
 }

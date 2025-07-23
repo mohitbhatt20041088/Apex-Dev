@@ -18,6 +18,10 @@ public with sharing class CaseManagmentHandler {
     @AuraEnabled 
     public static String updateCaseAction(String caseId,String actionType,String comment){
         try {
+
+
+            final String ESCALATION_QUEUE_NAME = 'Case Escalated Queue';
+            List<Group> queueList = [SELECT Id,Name FROM Group WHERE Type = 'Queue' AND Name =: ESCALATION_QUEUE_NAME AND Id IN (SELECT QueueId FROM QueueSobject WHERE SobjectType = 'Case') LIMIT 1];
             
 
             List<CaseComment> cclist = new List<CaseComment>();
@@ -32,10 +36,25 @@ public with sharing class CaseManagmentHandler {
             }
 
             if (actionType == 'Escalate') {
-                Case caseToUpdate = new Case(Id = caseId, IsEscalated = true, Priority = 'High');
-                update caseToUpdate;
+                System.debug('Queue List Size: ' + queueList.size());
+                if (!queueList.isEmpty()) {
+                    System.debug('Queue ID: ' + queueList[0].Id);
+                }
+                
+                Case caseToUpdate = new Case(Id = caseId, IsEscalated = true, Priority = 'High',OwnerId = queueList.size() == 1 ? queueList[0].Id : null);
+                System.debug('Case Owner ID being set to: ' + caseToUpdate.OwnerId);
+                
+                if (caseToUpdate.OwnerId != null) {
+                    update caseToUpdate;
+                    System.debug('Case updated successfully');
+                } else {
+                    System.debug('Case not updated - OwnerId is null');
+                }
 
-                List<Case> caseDetails = [SELECT CaseNumber, Status, Priority FROM Case WHERE Id =: caseId LIMIT 1];
+                
+                
+                if (caseToUpdate.OwnerId != UserInfo.getUserId()) {
+                    List<Case> caseDetails = [SELECT CaseNumber, Status, Priority FROM Case WHERE Id =: caseId LIMIT 1];
                 
                 
                 Case_Escalation_log__c log = new Case_Escalation_log__C(
@@ -46,12 +65,15 @@ public with sharing class CaseManagmentHandler {
                     Priority__c = 'High',
                     Status__c = 'Escalated',
                     Time_Stamp__c = DateTime.now(),
-                    User__c = UserInfo.getUserId()
+                    User__c = UserInfo.getUserId(),
+                    Assign_To__c = queueList[0].Name
 
                 );
                 insert log;
                 String updatedCaseNumber = !caseDetails.isEmpty() ? caseDetails[0].CaseNumber : 'Unknown';
                 return 'Case '+updatedCaseNumber+' has been escalated';
+                }
+                return 'no log created';
             }
 
             if (actionType == 'Close') {
@@ -68,7 +90,8 @@ public with sharing class CaseManagmentHandler {
                     Priority__c = !caseDetails.isEmpty() ? caseDetails[0].Priority : null,
                     Status__c = 'Closed',
                     Time_Stamp__c = DateTime.now(),
-                    User__c = UserInfo.getUserId()
+                    User__c = UserInfo.getUserId(),
+                    Assign_To__c = queueList[0].Name
                     
                 );
                 insert log;
@@ -86,22 +109,4 @@ public with sharing class CaseManagmentHandler {
 
     
     
-    public static void afterUpdate(Case oldCase, Case newCase){
-        final String ESCALATION_QUEUE_NAME = 'Case_Escalated_Queue';
-        List<Group> queueList = [SELECT Id FROM Group WHERE Type = 'Queue' AND Name =: ESCALATION_QUEUE_NAME LIMIT 1];
-        List<Case> casesToAssign = new List<Case>();
-        
-        if (queueList.size() > 0) {
-            if (oldCase.IsEscalated != newCase.IsEscalated && newCase.IsEscalated == true) {
-                Case caseForUpdate = new Case(
-                    Id = newCase.Id,
-                    OwnerId = queueList[0].Id
-                );
-                casesToAssign.add(caseForUpdate);
-            }
-        }
-        if (!casesToAssign.isEmpty()) {
-            update casesToAssign;
-        }
-    }
 }

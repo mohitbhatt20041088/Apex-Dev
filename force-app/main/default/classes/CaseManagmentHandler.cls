@@ -87,7 +87,7 @@ public with sharing class CaseManagmentHandler {
     
     
     public static void afterUpdate(Case oldCase, Case newCase){
-        final String ESCALATION_QUEUE_NAME = 'Case_Escalated_Queue';
+        final String ESCALATION_QUEUE_NAME = 'Case Escalated Queue';
         List<Group> queueList = [SELECT Id FROM Group WHERE Type = 'Queue' AND Name =: ESCALATION_QUEUE_NAME LIMIT 1];
         List<Case> casesToAssign = new List<Case>();
         
